@@ -21,23 +21,26 @@ function onFileChange() {
 
     fileReader.onload = function(event) {
         // 読み込んだデータをimgに設定
-        imgEl.attr('src', event.target.result);
-        cropper = new Cropper(imgEl[0], {
-            aspectRatio: 1,
-            dragMode: "move",
-            wheelZoomRatio: 0.05,
-            modal: false,
-            autoCropArea: 0.2,
-            cropBoxMovable: false,
-            cropBoxResizable: false,
-            dragCrop: false,
-            toggleDragModeOnDblclick: false,
-            minCropBoxWidth: $('.edit_area').width() - 1,
+        resizeImage(event.target.result, function (dataurl) {
+            imgEl.attr('src', dataurl);
+            cropper = new Cropper(imgEl[0], {
+                aspectRatio: 1,
+                dragMode: "move",
+                wheelZoomRatio: 0.05,
+                modal: false,
+                autoCropArea: 0.2,
+                cropBoxMovable: false,
+                cropBoxResizable: false,
+                dragCrop: false,
+                toggleDragModeOnDblclick: false,
+                minCropBoxWidth: $('.edit_area').width() - 1,
 
-            crop: function(e) {
-                console.log(e.detail.x);
-            }
+                crop: function(e) {
+
+                }
+            });
         });
+
     };
 
     fileReader.readAsDataURL(file);
@@ -69,9 +72,8 @@ function onCancelClick() {
 }
 
 function onSubmitClick() {
-    $('.submit').click();
-/*
     var base64img = cropper.getCroppedCanvas().toDataURL();
+    var sandbox = $('.sandbox').attr('src', base64img);
     $.ajax({
         type: 'POST',
         url: '/upload',
@@ -81,5 +83,28 @@ function onSubmitClick() {
         success: function (data) {
         },
         error: function (jqXHR, textStatus, errorThrown) {
-        }});*/
+        }});
 }
+
+function resizeImage(base64image, callback) {
+    const MIN_SIZE = 100;
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    var image = new Image();
+    image.crossOrigin = "Anonymous";
+    image.onload = function(event){
+        var dstWidth, dstHeight;
+        if (this.width > this.height) {
+            dstWidth = MIN_SIZE;
+            dstHeight = this.height * MIN_SIZE / this.width;
+        } else {
+            dstHeight = MIN_SIZE;
+            dstWidth = this.width * MIN_SIZE / this.height;
+        }
+        canvas.width = dstWidth;
+        canvas.height = dstHeight;
+        ctx.drawImage(this, 0, 0, this.width, this.height, 0, 0, dstWidth, dstHeight);
+        callback(canvas.toDataURL());
+    };
+    image.src = base64image;
+};
