@@ -1,8 +1,81 @@
 body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+
 }
 
 a {
   color: #00B7FF;
+}
+
+.header_container {
+  height: 44px;
+}
+
+.header {
+  left: 0;
+  right: 0;
+  top: 0;
+  position: fixed;
+  height: 44px;
+  padding: 0 16px;
+}
+
+.header:before {
+  background-color: rgba(0,0,0,.0975);
+  bottom: -1px;
+  content: '';
+  height: 1px;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.header_title {
+  width: 100px;
+  padding: 8px 0;
+}
+
+.cancel_button {
+  left: 12px;
+  top: 12px;
+  position: absolute;
+  background: url(../images/cancel.png) no-repeat center center;
+  background-size: contain;
+  width: 20px;
+  height: 20px;
+  display: none;
+}
+
+.submit_button {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  color: #3897f0;
+  font-weight: bold;
+  display: none;
+}
+
+.container {
+  width: 100%;
+  text-align: center;
+}
+
+.thumnail {
+  width: 100%;
+  height: 100%;
+}
+
+.control_area {
+  display: none;
+}
+
+.edit_area {
+  width: 100%;
+}
+
+.shutter_button {
+  display: inline-block;
+  background: url("../images/shutter.png") no-repeat center center;
+  background-size: contain;
+  width: 80px;
+  height: 80px;
 }

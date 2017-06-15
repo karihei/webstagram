@@ -1,5 +1,23 @@
 extends layout
 
-block content
-  h1= title
-  p Welcome to #{title}
+block header
+    .header_container
+        header.header
+            .cancel_button
+            img.header_title(src="./images/kinstagram_logo.png")
+            .submit_button シェアする
+
+block body
+    .edit_area
+        img.thumnail
+
+    .shutter_button
+
+    .control_area
+        form(method="post", enctype="multipart/form-data", action="/upload", target="resultframe")
+            input.fileinput(type="file", accept="image/jpeg,image/png", name="image")
+            input.reset(type="reset")
+            input.submit(type="submit")
+        iframe(name="resultframe")
+
+block footer
