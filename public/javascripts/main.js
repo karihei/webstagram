@@ -2,6 +2,8 @@ $(window).on('load', onLoad);
 var Cropper;
 var cropper;
 
+const IMAGE_MIN_SIZE = 1024;
+
 function onLoad() {
     $('.fileinput').change(onFileChange);
     $('.shutter_button').on('click', onShutterClick);
@@ -15,9 +17,9 @@ function onFileChange() {
         return;
     }
 
-    var file = this.files[0];
-    var imgEl = $('.thumnail');
-    var fileReader = new FileReader();
+    const file = this.files[0];
+    const fileReader = new FileReader();
+    const imgEl = $('.thumnail');
 
     fileReader.onload = function(event) {
         // 読み込んだデータをimgに設定
@@ -50,7 +52,7 @@ function onFileChange() {
 
 function editMode(enable) {
     if (enable) {
-        var el = $('.edit_area');
+        const el = $('.edit_area');
         el.height(el.width());
         $('.edit_area').show();
         $('.cancel_button').show();
@@ -72,8 +74,8 @@ function onCancelClick() {
 }
 
 function onSubmitClick() {
-    var base64img = cropper.getCroppedCanvas().toDataURL();
-    var sandbox = $('.sandbox').attr('src', base64img);
+    const base64img = cropper.getCroppedCanvas().toDataURL();
+
     $.ajax({
         type: 'POST',
         url: '/upload',
@@ -87,19 +89,18 @@ function onSubmitClick() {
 }
 
 function resizeImage(base64image, callback) {
-    const MIN_SIZE = 100;
-    var canvas = document.createElement('canvas');
-    var ctx = canvas.getContext('2d');
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
     var image = new Image();
     image.crossOrigin = "Anonymous";
     image.onload = function(event){
         var dstWidth, dstHeight;
         if (this.width > this.height) {
-            dstWidth = MIN_SIZE;
-            dstHeight = this.height * MIN_SIZE / this.width;
+            dstWidth = IMAGE_MIN_SIZE;
+            dstHeight = this.height * IMAGE_MIN_SIZE / this.width;
         } else {
-            dstHeight = MIN_SIZE;
-            dstWidth = this.width * MIN_SIZE / this.height;
+            dstHeight = IMAGE_MIN_SIZE;
+            dstWidth = this.width * IMAGE_MIN_SIZE / this.height;
         }
         canvas.width = dstWidth;
         canvas.height = dstHeight;
