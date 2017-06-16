@@ -13,8 +13,6 @@ block body
         img.thumnail
         img.sandbox
 
-    .shutter_button
-
     .control_area
         form(method="post", enctype="multipart/form-data", action="/upload", target="resultframe")
             input.fileinput(type="file", accept="image/jpeg,image/png", name="image")
@@ -23,3 +21,6 @@ block body
         iframe(name="resultframe")
 
 block footer
+    .footer_container
+        footer.footer
+            .shutter_button

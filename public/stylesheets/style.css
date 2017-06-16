@@ -54,6 +54,29 @@ a {
   display: none;
 }
 
+.footer_container {
+  height: 74px;
+}
+
+.footer {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  position: fixed;
+  padding: 0 16px;
+  height: 74px;
+}
+
+.footer:before {
+  background-color: rgba(0,0,0,.0975);
+  top: -1px;
+  content: '';
+  height: 1px;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
 .container {
   width: 100%;
   text-align: center;
@@ -76,8 +99,9 @@ a {
   display: inline-block;
   background: url("../images/shutter.png") no-repeat center center;
   background-size: contain;
-  width: 80px;
-  height: 80px;
+  width: 64px;
+  height: 64px;
+  margin: 5px;
 }
 
 .progress_bar {
