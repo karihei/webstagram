@@ -105,6 +105,8 @@ a {
 }
 
 .progress_bar {
+  position: fixed;
+  top: 40px;
   height: 5px;
   width: 100%;
   background: linear-gradient(225deg, #6ddbbf, #ee2e92, #6684ff);

@@ -107,6 +107,9 @@ function onSubmitClick() {
 
         success: function (data) {
             showProgress(false);
+            $('.edit_area').fadeOut(100, function () {
+                editMode(false);
+            });
         },
         error: function (jqXHR, textStatus, errorThrown) {}});
 }
