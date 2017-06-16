@@ -1,6 +1,5 @@
 var express = require('express');
 var multer = require('multer');
-var bodyParser = require('body-parser');
 var fs = require('fs');
 var app = express();
 
@@ -13,7 +12,7 @@ var upload = multer({});
 
 // ファイルアップロード
 app.post('/upload', upload.single('image'), function(req, res) {
-    var fileName = genId() + '.png';
+    var fileName = genId() + '.jpg';
     var imgBase64 = req.body['imgBase64'].split(',')[1];
     fs.writeFile('./uploads/' + fileName, imgBase64, 'base64', function (err) {
         if (err) return next(err);

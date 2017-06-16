@@ -79,3 +79,63 @@ a {
   width: 80px;
   height: 80px;
 }
+
+.progress_bar {
+  height: 5px;
+  width: 100%;
+  background: linear-gradient(225deg, #6ddbbf, #ee2e92, #6684ff);
+  background-size: 600% 600%;
+  -webkit-animation: waitingrainbow 1s ease infinite;
+  -moz-animation: waitingrainbow 1s ease infinite;
+  -o-animation: waitingrainbow 1s ease infinite;
+  animation: waitingrainbow 1s ease infinite;
+  display: none;
+}
+
+@-webkit-keyframes waitingrainbow {
+  0% {
+    background-position: 0% 51%
+  }
+  50% {
+    background-position: 100% 50%
+  }
+  100% {
+    background-position: 0% 51%
+  }
+}
+
+@-moz-keyframes waitingrainbow {
+  0% {
+    background-position: 0% 51%
+  }
+  50% {
+    background-position: 100% 50%
+  }
+  100% {
+    background-position: 0% 51%
+  }
+}
+
+@-o-keyframes waitingrainbow {
+  0% {
+    background-position: 0% 51%
+  }
+  50% {
+    background-position: 100% 50%
+  }
+  100% {
+    background-position: 0% 51%
+  }
+}
+
+@keyframes waitingrainbow {
+  0% {
+    background-position: 0% 51%
+  }
+  50% {
+    background-position: 100% 50%
+  }
+  100% {
+    background-position: 0% 51%
+  }
+}

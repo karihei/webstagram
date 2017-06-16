@@ -2,7 +2,7 @@ $(window).on('load', onLoad);
 var Cropper;
 var cropper;
 
-const IMAGE_MIN_SIZE = 2048;
+const IMAGE_MIN_SIZE = 1500;
 
 function onLoad() {
     $('.fileinput').change(onFileChange);
@@ -16,7 +16,7 @@ function onFileChange() {
     if (!this.files.length) {
         return;
     }
-
+    showProgress(true);
     const file = this.files[0];
     const fileReader = new FileReader();
 
@@ -31,15 +31,17 @@ function onFileChange() {
             cropper = new Cropper(imgEl[0], {
                 aspectRatio: 1,
                 dragMode: "move",
-                viewMode: 3,
                 wheelZoomRatio: 0.05,
-                modal: false,
+
                 autoCropArea: 1,
                 cropBoxMovable: false,
                 cropBoxResizable: false,
                 dragCrop: false,
                 toggleDragModeOnDblclick: false,
-                minCropBoxWidth: $('.edit_area').width() - 1
+                minCropBoxWidth: $('.edit_area').width() - 1,
+                ready: function() {
+                    showProgress(false);
+                }
             });
         });
     };
@@ -76,6 +78,14 @@ function editMode(enable) {
     }
 }
 
+function showProgress(enable) {
+    if (enable) {
+        $('.progress_bar').show();
+    } else {
+        $('.progress_bar').hide();
+    }
+}
+
 function onShutterClick() {
     $('.fileinput').click();
 }
@@ -87,6 +97,7 @@ function onCancelClick() {
 
 function onSubmitClick() {
     const base64img = cropper.getCroppedCanvas().toDataURL();
+    showProgress(true);
 
     $.ajax({
         type: 'POST',
@@ -94,6 +105,8 @@ function onSubmitClick() {
         data: '{"imgBase64":"' + base64img + '"}',
         contentType: "application/json; charset=utf-8",
 
-        success: function (data) {},
+        success: function (data) {
+            showProgress(false);
+        },
         error: function (jqXHR, textStatus, errorThrown) {}});
 }
