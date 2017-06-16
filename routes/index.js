@@ -6,7 +6,7 @@ var app = express();
 
 /* GET home page. */
 app.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+  res.render('index', { title: 'kinstagram' });
 });
 
 var upload = multer({});

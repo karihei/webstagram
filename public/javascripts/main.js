@@ -2,7 +2,7 @@ $(window).on('load', onLoad);
 var Cropper;
 var cropper;
 
-const IMAGE_MIN_SIZE = 1024;
+const IMAGE_MIN_SIZE = 2048;
 
 function onLoad() {
     $('.fileinput').change(onFileChange);
@@ -19,35 +19,47 @@ function onFileChange() {
 
     const file = this.files[0];
     const fileReader = new FileReader();
-    const imgEl = $('.thumnail');
 
     fileReader.onload = function(event) {
-        // 読み込んだデータをimgに設定
-        resizeImage(event.target.result, function (dataurl) {
-            imgEl.attr('src', dataurl);
+        const imgEl = $('.thumnail');
+        if (cropper) {
+            imgEl.attr('src', null);
+            cropper.destroy();
+        }
+        adjustImage(file, function(canvas) {
+            imgEl.attr('src', canvas.toDataURL());
             cropper = new Cropper(imgEl[0], {
                 aspectRatio: 1,
                 dragMode: "move",
+                viewMode: 3,
                 wheelZoomRatio: 0.05,
                 modal: false,
-                autoCropArea: 0.2,
+                autoCropArea: 1,
                 cropBoxMovable: false,
                 cropBoxResizable: false,
                 dragCrop: false,
                 toggleDragModeOnDblclick: false,
-                minCropBoxWidth: $('.edit_area').width() - 1,
-
-                crop: function(e) {
-
-                }
+                minCropBoxWidth: $('.edit_area').width() - 1
             });
         });
-
     };
 
     fileReader.readAsDataURL(file);
-
     editMode(true);
+}
+
+function adjustImage(file, callback) {
+    loadImage.parseMetaData(file, function (data) {
+        var options = {
+            canvas: true,
+            maxWidth: IMAGE_MIN_SIZE,
+            maxHeight: IMAGE_MIN_SIZE
+        };
+        if (data.exif) {
+            options.orientation = data.exif.get('Orientation');
+        }
+        loadImage(file, callback, options);
+    });
 }
 
 function editMode(enable) {
@@ -82,30 +94,6 @@ function onSubmitClick() {
         data: '{"imgBase64":"' + base64img + '"}',
         contentType: "application/json; charset=utf-8",
 
-        success: function (data) {
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-        }});
+        success: function (data) {},
+        error: function (jqXHR, textStatus, errorThrown) {}});
 }
-
-function resizeImage(base64image, callback) {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    var image = new Image();
-    image.crossOrigin = "Anonymous";
-    image.onload = function(event){
-        var dstWidth, dstHeight;
-        if (this.width > this.height) {
-            dstWidth = IMAGE_MIN_SIZE;
-            dstHeight = this.height * IMAGE_MIN_SIZE / this.width;
-        } else {
-            dstHeight = IMAGE_MIN_SIZE;
-            dstWidth = this.width * IMAGE_MIN_SIZE / this.height;
-        }
-        canvas.width = dstWidth;
-        canvas.height = dstHeight;
-        ctx.drawImage(this, 0, 0, this.width, this.height, 0, 0, dstWidth, dstHeight);
-        callback(canvas.toDataURL());
-    };
-    image.src = base64image;
-};
