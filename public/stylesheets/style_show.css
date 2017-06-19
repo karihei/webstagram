@@ -6,13 +6,30 @@ a {
   color: #00B7FF;
 }
 
+.container {
+  overflow-x: hidden;
+}
 
 .row {
   height: 33%;
-  width: 100%;
+  width: 140%;
+}
+
+#r1 {
+  background: #00B7FF;
+}
+
+#r2 {
+  background: #ff8579;
+}
+
+#r3 {
+  background: #efff0a;
 }
 
 .item {
+  overflow-x: visible;
+  display: inline-block;
   height: 100%;
 }
 

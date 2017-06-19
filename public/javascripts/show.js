@@ -1,18 +1,33 @@
 $(window).on('load', onLoad);
 
 var latestId = -1;
+var minPhotoRowLength = 1;
+var ROWS = 3;
 
 function onLoad() {
+    initDisplay();
     fetchPhotos();
 }
 
+function initDisplay() {
+    var minHeight = window.innerHeight / 2;
+    $('.row').css('height', minHeight);
+    minPhotoRowLength = Math.floor(window.innerWidth / minHeight) + 2;
+}
+
 function insertPhotos(photos) {
-    var row = $('#r1');
-    photos.forEach(function(photo) {
-        var path = 'uploads/' + photo.filename;
-        var item = $('<span>', {'class': 'item'}).append($('<img>', {'src': path}));
-        row.append(item);
-    });
+    var totalPhotoLength = minPhotoRowLength * ROWS;
+    var loop = Math.ceil(minPhotoRowLength / photos.length);
+    for (var i = 0;i < loop;i++){
+        for (var j = 1;j <= ROWS;j++) {
+            var row = $('#r' + j);
+            photos.forEach(function (photo) {
+                var path = 'uploads/' + photo.filename;
+                var item = $('<span>', {'class': 'item'}).append($('<img>', {'src': path}));
+                row.append(item);
+            });
+        }
+    }
 }
 
 function fetchPhotos() {
