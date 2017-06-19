@@ -22,23 +22,28 @@ function onFileChange() {
 
     fileReader.onload = function(event) {
         const imgEl = $('.thumnail');
+        const thumnailWidth = $('.edit_area').width();
+        imgEl.css({
+            'min-height': thumnailWidth,
+            'max-height': thumnailWidth
+        });
         if (cropper) {
             imgEl.attr('src', null);
             cropper.destroy();
         }
+
         adjustImage(file, function(canvas) {
             imgEl.attr('src', canvas.toDataURL());
             cropper = new Cropper(imgEl[0], {
                 aspectRatio: 1,
                 dragMode: "move",
+                viewMode: 3,
                 wheelZoomRatio: 0.05,
-
-                autoCropArea: 1,
                 cropBoxMovable: false,
                 cropBoxResizable: false,
                 dragCrop: false,
                 toggleDragModeOnDblclick: false,
-                minCropBoxWidth: $('.edit_area').width() - 1,
+                minCropBoxWidth: thumnailWidth - 1,
                 ready: function() {
                     showProgress(false);
                 }
@@ -66,15 +71,18 @@ function adjustImage(file, callback) {
 
 function editMode(enable) {
     if (enable) {
-        const el = $('.edit_area');
-        el.height(el.width());
+        $('.commentform').val('');
+        $('.commentform').show();
         $('.edit_area').show();
         $('.cancel_button').show();
         $('.submit_button').show();
+        $('.footer').hide();
     } else {
+        $('.commentform').hide();
         $('.edit_area').hide();
         $('.cancel_button').hide();
         $('.submit_button').hide();
+        $('.footer').show();
     }
 }
 
@@ -99,10 +107,11 @@ function onSubmitClick() {
     const base64img = cropper.getCroppedCanvas().toDataURL();
     showProgress(true);
 
+    var comment = escapeHtml($('.commentform').val());
     $.ajax({
         type: 'POST',
-        url: '/upload',
-        data: '{"imgBase64":"' + base64img + '"}',
+        url: '/api/upload',
+        data: '{"imgBase64":"' + base64img + '", "comment":"' + comment + '"}',
         contentType: "application/json; charset=utf-8",
 
         success: function (data) {
@@ -112,4 +121,20 @@ function onSubmitClick() {
             });
         },
         error: function (jqXHR, textStatus, errorThrown) {}});
+}
+
+function escapeHtml (string) {
+    if(typeof string !== 'string') {
+        return string;
+    }
+    return string.replace(/[&'`"<>]/g, function(match) {
+        return {
+            '&': '&amp;',
+            "'": '&#x27;',
+            '`': '&#x60;',
+            '"': '&quot;',
+            '<': '&lt;',
+            '>': '&gt;',
+        }[match]
+    });
 }

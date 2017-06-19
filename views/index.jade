@@ -1,4 +1,4 @@
-extends layout
+extends layout_index
 
 block header
     .header_container
@@ -11,7 +11,7 @@ block body
     .progress_bar
     .edit_area
         img.thumnail
-        img.sandbox
+    input.commentform(type=text, rows="1", placeholder="新郎新婦へのコメントがあればどうぞ!")
 
     .control_area
         form(method="post", enctype="multipart/form-data", action="/upload", target="resultframe")

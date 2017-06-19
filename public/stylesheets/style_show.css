@@ -1,0 +1,21 @@
+body {
+
+}
+
+a {
+  color: #00B7FF;
+}
+
+
+.row {
+  height: 33%;
+  width: 100%;
+}
+
+.item {
+  height: 100%;
+}
+
+.item img {
+  height: 100%;
+}
