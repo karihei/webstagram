@@ -32,7 +32,8 @@ function insertPhotos(photos) {
         var row = $('#r' + i);
         var photoByRowCount = 0;
         for (var j = 0;j < loop;j++) {
-            photos.forEach(function (photo) {
+
+            shufflePhoto(photos).forEach(function (photo) {
                 var item = $('<span>', {'class': 'item'}).append($('<img>', {'src': getPath(photo.filename)}));
                 item.height(minHeight);
                 item.css('left', photoByRowCount * minHeight);
@@ -65,6 +66,16 @@ function fetchPhotos() {
         insertPhotos(photos);
         pickup(photos[0]);
     });
+}
+
+function shufflePhoto(array) {
+    for(var i = array.length - 1; i > 0; i--){
+        var r = Math.floor(Math.random() * (i + 1));
+        var tmp = array[i];
+        array[i] = array[r];
+        array[r] = tmp;
+    }
+    return array;
 }
 
 function pickup(photo) {
