@@ -2,8 +2,8 @@ $(window).on('load', onLoad);
 
 var latestId = -1;
 var minPhotoRowLength = 1;
-var minheight = 0;
-const ROWS = 3;
+var minHeight = 0;
+const ROWS = 4;
 
 function onLoad() {
     initDisplay();
@@ -12,7 +12,13 @@ function onLoad() {
 
 function initDisplay() {
     minHeight = window.innerHeight / ROWS;
-    $('.row').css('height', minHeight);
+
+    for (var i = 1;i <= ROWS;i++) {
+        var row = $('<div>', {'id': 'r' + i, 'class': 'row'});
+        row.css('height', minHeight);
+        $('.container').append(row);
+    }
+
     minPhotoRowLength = Math.floor(window.innerWidth / minHeight) + 2;
 }
 
@@ -66,7 +72,7 @@ function pickup(photo) {
     var comemntCells = [];
     var effect = 'rotateUp';
     var duration = 200;
-    for (var i = 1;i <= ROWS;i++) {
+    for (var i = 1;i <= 3;i++) {
         $('#r' + i + ' .item').each(function(index, item) {
             if (index < 3) {
                 pickupCells.push(item);
@@ -88,8 +94,8 @@ function pickup(photo) {
     var pickupEl = $('<span>', {'class': 'pickup_item'});
     var imgEl = $('<img>', {'src' : getPath(photo.filename)});
     pickupEl.append(imgEl);
-    pickupEl.width(minHeight * ROWS);
-    pickupEl.height(minHeight * ROWS);
+    pickupEl.width(minHeight * 3);
+    pickupEl.height(minHeight * 3);
 
     $('.container').append(pickupEl);
 
@@ -103,7 +109,7 @@ function pickup(photo) {
         var commentContainer = $('<div>', {'class': 'comment_container'});
         var comment = $('<h1>', {'class': 'comment'});
         comment.text(photo.comment);
-        commentContainer.width(minHeight * 3 - 20);
+        commentContainer.width(minHeight * 3 - 40);
         commentContainer.height(minHeight - 10);
         commentContainer.css({'top': minHeight, 'left': minHeight * 3});
         commentContainer.append(comment);
