@@ -10,6 +10,19 @@ function onLoad() {
     $('.cancel_button').on('click', onCancelClick);
     $('.submit_button').on('click', onSubmitClick);
     Cropper = window.Cropper;
+
+    initBalloon();
+    fetchPhotos();
+}
+
+function initBalloon() {
+    if (localStorage.getItem('hasShowBalloon') == '1') {
+        $('.balloon').hide();
+    } else {
+        $('.balloon').show();
+        localStorage.setItem("hasShowBalloon", "1");
+    }
+
 }
 
 function onFileChange() {
@@ -130,6 +143,39 @@ function onSubmitClick() {
             }, 3000);
         },
         error: function (jqXHR, textStatus, errorThrown) {}});
+}
+
+function fetchPhotos() {
+    var fetch = new Promise(function(resolve, reject) {
+        $.ajax({
+            type: 'POST',
+            url: '/api/list',
+            data: JSON.stringify({'limit': 20}),
+            contentType: "application/json; charset=utf-8",
+
+            success: function (res) {
+                var photos = res['result'];
+                if (photos.length > 0) {
+                    resolve(res['result']);
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {}});
+    });
+
+    fetch.then(function(photos) {
+        latestId = photos[0].id;
+        insertPhotos(photos);
+    });
+}
+
+function insertPhotos(photos) {
+    var bgContainer = $('.bg_container');
+    photos.forEach(function(photo) {
+        var tile = $('<span>', {'class': 'bg_item'});
+        var img = $('<img>', {'src': './uploads/small/' + photo.filename});
+        tile.append(img);
+        bgContainer.append(tile);
+    });
 }
 
 function escapeHtml (string) {

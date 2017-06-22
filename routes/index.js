@@ -67,10 +67,11 @@ app.post('/api/upload', upload.single('image'), function(req, res, next) {
 });
 
 app.post('/api/list', function(req, res, next) {
-    var offset = req.body['offset'];
+    var size = req.body['limit'] || 30;
+    var offset = req.body['offset'] || 0;
     var select = new Promise(function(resolve, reject) {
         db.serialize(function() {
-            db.all('select * from photo_table where id >= ? order by id desc', [offset], function(err, rows) {
+            db.all('select * from photo_table where id >= ? order by id desc limit ?', [offset, size], function(err, rows) {
                 if (!err) {
                     resolve(rows);
                 }
@@ -90,8 +91,13 @@ function genId() {
 function genThumbnail(src) {
     easyimg.thumbnail({
         src: UPLOAD_DIR + src, dst: UPLOAD_DIR + '/thumbnails/' + src,
-        width:800, height:800
-    }); 
+        width: 800, height: 800
+    });
+
+    easyimg.thumbnail({
+        src: UPLOAD_DIR + src, dst: UPLOAD_DIR + '/small/' + src,
+        width: 200, height: 200
+    });
 }
 
 module.exports = app;

@@ -8,6 +8,7 @@ a {
 
 .header_container {
     height: 44px;
+
 }
 
 .header {
@@ -17,6 +18,8 @@ a {
     position: fixed;
     height: 44px;
     padding: 0 16px;
+    z-index: 100;
+    background-color: #fff;
 }
 
 .header:before {
@@ -65,6 +68,8 @@ a {
     position: fixed;
     padding: 0 16px;
     height: 74px;
+    z-index: 100;
+    background-color: #fff;
 }
 
 .footer:before {
@@ -121,17 +126,70 @@ a {
     left: 0;
     width: 100%;
     height: 100%;
+    z-index: 50;
 }
 
 .success {
     position: relative;
-    top: 90px;
     display: inline-block;
     background: url("../images/success.png") no-repeat center center;
     background-size: contain;
     width: 160px;
     height: 160px;
     display: none;
+}
+
+.bg_container {
+    position: absolute;
+    opacity: 0.4;
+    animation: moveimg 15s infinite linear;
+}
+
+@keyframes moveimg {
+    0% { left: 0; top: 0;}
+    100% { left: 0; top: -200px; }
+}
+
+.bg_item {
+    border-left: 1px solid #fff;
+    width: 33%;
+    display: inline-block;
+}
+
+.bg_item img {
+    width: 100%;
+    height: 100%;
+}
+
+.balloon {
+    position: absolute;
+    top: -50px;
+    left: 100px;
+    right: 100px;
+    display: inline-block;
+    padding: 0 15px;
+    width: auto;
+    min-width: 115px;
+    height: 40px;
+    color: #F6F6F6;
+    line-height: 40px;
+    text-align: center;
+    background: #19283C;
+    z-index: 0;
+    display: none;
+}
+
+.balloon:after {
+    content: "";
+    position: absolute;
+    bottom: -10px; left: 50%;
+    margin-left: -10px;
+    display: block;
+    width: 0px;
+    height: 0px;
+    border-style: solid;
+    border-width: 10px 10px 0 10px;
+    border-color: #19283C transparent transparent transparent;
 }
 
 .progress_bar {
