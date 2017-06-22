@@ -74,12 +74,14 @@ function editMode(enable) {
         $('.commentform').val('');
         $('.commentform').show();
         $('.edit_area').show();
+        $('.show_area').hide();
         $('.cancel_button').show();
         $('.submit_button').show();
         $('.footer').hide();
     } else {
         $('.commentform').hide();
         $('.edit_area').hide();
+        $('.show_area').show();
         $('.cancel_button').hide();
         $('.submit_button').hide();
         $('.footer').show();
@@ -116,9 +118,16 @@ function onSubmitClick() {
 
         success: function (data) {
             showProgress(false);
-            $('.edit_area').fadeOut(100, function () {
+            var successEl = $('.success');
+            successEl.css({'display': 'inline-block'});
+            successEl.addClass('magictime vanishIn');
+            $('.edit_area').fadeOut(300, function () {
                 editMode(false);
             });
+
+            setTimeout(function() {
+                successEl.fadeOut(500);
+            }, 3000);
         },
         error: function (jqXHR, textStatus, errorThrown) {}});
 }

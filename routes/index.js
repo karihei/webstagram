@@ -4,6 +4,9 @@ var fs = require('fs');
 var app = express();
 var sqlite = require('sqlite3');
 var db = new sqlite.Database('w.db');
+var easyimg = require('easyimage');
+
+var UPLOAD_DIR = './public/uploads/';
 
 // DB init
 db.serialize(function () {
@@ -38,16 +41,26 @@ app.get('/show', function(req, res, next) {
     res.render('show', { title: 'show - kinstagram' });
 });
 
+fs.readdir('./public/uploads/', function(err, files){
+    if (err) throw err;
+    files.filter(function(file){
+        return /.*\.jpg$/.test(file); //絞り込み
+    }).forEach(function (file) {
+        genThumbnail(file);
+    });
+});
+
 var upload = multer({});
 app.post('/api/upload', upload.single('image'), function(req, res, next) {
     var id = genId();
     var fileName = id + '.jpg';
     var imgBase64 = req.body['imgBase64'].split(',')[1];
     var comment = req.body['comment'] || '';
-    fs.writeFile('./public/uploads/' + fileName, imgBase64, 'base64', function (err) {
+    fs.writeFile(UPLOAD_DIR + fileName, imgBase64, 'base64', function (err) {
         if (err) {
             return next(err);
         }
+        genThumbnail(fileName);
         insertPhotoData({id: id, filename: fileName, comment: comment});
         res.json({ 'result': 'success!' });
     })
@@ -72,6 +85,13 @@ app.post('/api/list', function(req, res, next) {
 
 function genId() {
     return new Date().getTime() + Math.floor(Math.random() * (9999 - 1000) + 1000);
+}
+
+function genThumbnail(src) {
+    easyimg.thumbnail({
+        src: UPLOAD_DIR + src, dst: UPLOAD_DIR + '/thumbnails/' + src,
+        width:800, height:800
+    }); 
 }
 
 module.exports = app;

@@ -23,7 +23,7 @@ function initDisplay() {
 }
 
 function getPath(filename) {
-    return 'uploads/' + filename;
+    return 'uploads/thumbnails/' + filename;
 }
 
 function insertPhotos(photos) {
