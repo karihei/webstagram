@@ -10,6 +10,19 @@ function onLoad() {
     $('.cancel_button').on('click', onCancelClick);
     $('.submit_button').on('click', onSubmitClick);
     Cropper = window.Cropper;
+
+    initBalloon();
+    fetchPhotos();
+}
+
+function initBalloon() {
+    if (localStorage.getItem('hasShowBalloon') == '1') {
+        $('.balloon').hide();
+    } else {
+        $('.balloon').show();
+        localStorage.setItem("hasShowBalloon", "1");
+    }
+
 }
 
 function onFileChange() {
@@ -74,12 +87,14 @@ function editMode(enable) {
         $('.commentform').val('');
         $('.commentform').show();
         $('.edit_area').show();
+        $('.show_area').hide();
         $('.cancel_button').show();
         $('.submit_button').show();
         $('.footer').hide();
     } else {
         $('.commentform').hide();
         $('.edit_area').hide();
+        $('.show_area').show();
         $('.cancel_button').hide();
         $('.submit_button').hide();
         $('.footer').show();
@@ -116,11 +131,51 @@ function onSubmitClick() {
 
         success: function (data) {
             showProgress(false);
-            $('.edit_area').fadeOut(100, function () {
+            var successEl = $('.success');
+            successEl.css({'display': 'inline-block'});
+            successEl.addClass('magictime vanishIn');
+            $('.edit_area').fadeOut(300, function () {
                 editMode(false);
             });
+
+            setTimeout(function() {
+                successEl.fadeOut(500);
+            }, 3000);
         },
         error: function (jqXHR, textStatus, errorThrown) {}});
+}
+
+function fetchPhotos() {
+    var fetch = new Promise(function(resolve, reject) {
+        $.ajax({
+            type: 'POST',
+            url: '/api/list',
+            data: JSON.stringify({'limit': 20}),
+            contentType: "application/json; charset=utf-8",
+
+            success: function (res) {
+                var photos = res['result'];
+                if (photos.length > 0) {
+                    resolve(res['result']);
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {}});
+    });
+
+    fetch.then(function(photos) {
+        latestId = photos[0].id;
+        insertPhotos(photos);
+    });
+}
+
+function insertPhotos(photos) {
+    var bgContainer = $('.bg_container');
+    photos.forEach(function(photo) {
+        var tile = $('<span>', {'class': 'bg_item'});
+        var img = $('<img>', {'src': './uploads/small/' + photo.filename});
+        tile.append(img);
+        bgContainer.append(tile);
+    });
 }
 
 function escapeHtml (string) {

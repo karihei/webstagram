@@ -9,6 +9,12 @@ block header
 
 block body
     .progress_bar
+    .show_area
+        .bg_container
+        .welcome_board
+            h1(style='text-align: left') ご参加いただきありがとうございます！今日はアメリカから来てくれた人もいれば、学生以来10年ぶりに会う人もいます。集まった皆さんで楽しみつつ、ディズニー目指してどんどん写真をアップしてください！
+            h1(style='text-align: right') 佐藤 鉄平・未帆
+        .success
     .edit_area
         img.thumnail
     input.commentform(type=text, rows="1", placeholder="新郎新婦へのコメントがあればどうぞ!")
@@ -23,4 +29,5 @@ block body
 block footer
     .footer_container
         footer.footer
+            .balloon ここから写真を投稿
             .shutter_button
