@@ -38,7 +38,7 @@ a {
 .comment_container {
   position: absolute;
   display: inline-block;
-  padding: 0 15px;
+  padding: 5px;
   min-width: 115px;
   line-height: 34px;
   color: #19283C;
@@ -63,8 +63,12 @@ a {
 }
 
 .comment {
+  text-align: left;
   font-size: 3em;
   line-height: 100%;
   padding: 5px;
-  position: absolute;
+  position: relative;
+  height: 100%;
+  width: 100%;
+
 }

@@ -4,10 +4,25 @@ var latestId = -1;
 var minPhotoRowLength = 1;
 var minHeight = 0;
 const ROWS = 4;
+var allPhotos = [];
+var readyToPickup = false;
+const PICKUP_INTERVAL = 4000;
+const FETCH_INTERVAL = 5000;
+
+var currentPickupPos = [];
 
 function onLoad() {
     initDisplay();
     fetchPhotos();
+
+    setInterval(function() {
+        pickup(allPhotos[Math.floor(Math.random() * allPhotos.length)]);
+    }, PICKUP_INTERVAL)
+
+
+    setInterval(function() {
+        fetchPhotos();
+    }, FETCH_INTERVAL);
 }
 
 function initDisplay() {
@@ -34,7 +49,7 @@ function insertPhotos(photos) {
         for (var j = 0;j < loop;j++) {
 
             shufflePhoto(photos).forEach(function (photo) {
-                var item = $('<span>', {'class': 'item'}).append($('<img>', {'src': getPath(photo.filename)}));
+                var item = $('<span>', {'class': 'item', 'id': 'i' + photoByRowCount + '_' + i}).append($('<img>', {'src': getPath(photo.filename)}));
                 item.height(minHeight);
                 item.css('left', photoByRowCount * minHeight);
                 row.append(item);
@@ -44,12 +59,34 @@ function insertPhotos(photos) {
     }
 }
 
+function updatePhotos(photos) {
+    var ngPoss = currentPickupPos;
+    photos.forEach(function(photo) {
+        do {
+            var pos = randomUpdatePosition();
+        } while (ngPoss.indexOf(pos.x + '_' + pos.y) == 0);
+        ngPoss.push(pos.x + '_' + pos.y);
+        $('#i' + pos.x + '_' + pos.y).remove();
+        var row = $('#r' + pos.y);
+        var item = $('<span>', {'class': 'item', 'id': 'i' + pos.x + '_' + pos.y}).append($('<img>', {'src': getPath(photo.filename)}));
+        item.height(minHeight);
+        item.css('left', pos.x * minHeight);
+        row.append(item);
+    });
+}
+
+function randomUpdatePosition() {
+    var x = Math.floor(Math.random() * minPhotoRowLength);
+    var y = Math.floor(Math.random() * ROWS);
+    return {x: x, y: y};
+}
+
 function fetchPhotos() {
     var fetch = new Promise(function(resolve, reject) {
         $.ajax({
             type: 'POST',
             url: '/api/list',
-            data: JSON.stringify({'offset': 1497870075524}),
+            data: JSON.stringify({'offset': latestId}),
             contentType: "application/json; charset=utf-8",
 
             success: function (res) {
@@ -63,8 +100,14 @@ function fetchPhotos() {
 
     fetch.then(function(photos) {
         latestId = photos[0].id;
-        insertPhotos(photos);
-        pickup(photos[0]);
+        allPhotos = allPhotos.concat(photos);
+        if (!readyToPickup) {
+            // first
+            insertPhotos(photos);
+            readyToPickup = true;
+        } else {
+            // updatePhotos(photos);
+        }
     });
 }
 
@@ -79,6 +122,11 @@ function shufflePhoto(array) {
 }
 
 function pickup(photo) {
+    if (!readyToPickup) {
+        return;
+    }
+    resetPickup();
+
     var pickupCells = [];
     var commentCell;
     var effect = 'rotateUp';
@@ -87,13 +135,16 @@ function pickup(photo) {
     var commentPos = {x: 0, y:0};
     var tileSize = 3;
 
+    // TODO:ROWを順番に見ているので新しく追加されたCELLに対応できていない。座標指定でやるべし
     for (var i = startPos.y;i < startPos.y + tileSize;i++) {
         $('#r' + i + ' .item').each(function(index, item) {
             if (index >= startPos.x && index < (startPos.x + tileSize)) {
                 pickupCells.push(item);
+                currentPickupPos.push(index + '_' + i);
             } else if (index == (startPos.x + tileSize) && i == (startPos.y + 1)) {
                 commentCell = item;
                 commentPos = {x: index, y: i};
+                currentPickupPos.push(index + '_' + i);
             }
         });
     }
@@ -124,12 +175,19 @@ function pickup(photo) {
         var commentContainer = $('<div>', {'class': 'comment_container'});
         var comment = $('<h1>', {'class': 'comment'});
         comment.text(photo.comment);
-        commentContainer.width(minHeight - 40);
-        commentContainer.height(minHeight - 10);
-        commentContainer.css({'top': minHeight * commentPos.y, 'left': minHeight * commentPos.x});
+        commentContainer.width(minHeight - 20);
+        commentContainer.height(minHeight - 20);
+        commentContainer.css({'top': minHeight * commentPos.y + 2, 'left': minHeight * commentPos.x});
         commentContainer.append(comment);
         $('.container').append(commentContainer);
     }
+}
+
+function resetPickup() {
+    $('.pickup_item').remove();
+    $('.comment_container').remove();
+    $('.item.magictime').removeClass('magictime slideDown rotateUp');
+    currentPickupPos = [];
 }
 
 function randomStartPosition() {
