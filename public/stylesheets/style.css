@@ -153,11 +153,28 @@ a {
     position: relative;
     top: -100px;
     display: inline-block;
-    background: url("../images/success.png") no-repeat center center;
-    background-size: contain;
     width: 160px;
     height: 160px;
     display: none;
+}
+
+.success {
+    background: url("../images/success.png") no-repeat center center;
+    background-size: contain;
+}
+
+.error {
+    position: absolute;
+    top: 100px;
+    left: 120px;
+    width: 160px;
+    height: 160px;
+    display: none;
+}
+
+.error {
+    background: url("../images/error.png") no-repeat center center;
+    background-size: contain;
 }
 
 .bg_container {

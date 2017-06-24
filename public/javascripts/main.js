@@ -153,17 +153,30 @@ function onSubmitClick() {
 
         success: function () {
             showProgress(false);
-            const successEl = $('.success');
-            successEl.css({'display': 'inline-block'}).addClass('magictime vanishIn');
             $('.edit_area').fadeOut(300, function () {
                 editMode(false);
             });
-
-            setTimeout(function() {
-                successEl.fadeOut(500);
-            }, 3000);
+            showSuccess();
         },
-        error: function (jqXHR, textStatus, errorThrown) {}});
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError();
+        }});
+}
+
+function showSuccess() {
+    const successEl = $('.success');
+    successEl.css({'display': 'inline-block'}).addClass('magictime vanishIn');
+    setTimeout(function() {
+        successEl.fadeOut(500);
+    }, 2000);
+}
+
+function showError() {
+    const el = $('.error');
+    el.css({'display': 'inline-block'}).addClass('magictime vanishIn');
+    setTimeout(function() {
+        el.fadeOut(500);
+    }, 2000);
 }
 
 function onCloseClick() {
