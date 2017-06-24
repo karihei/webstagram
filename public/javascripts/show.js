@@ -6,6 +6,7 @@ var minHeight = 0;
 var allPhotos = [];
 var currentPickupPos = [];
 var readyToPickup = false;
+var lotsMode = false;
 var pickupStreak = 0;
 var updatePhotoQueue = [];
 const maxPickupStreak = 3;
@@ -18,16 +19,27 @@ const PICKUP_EFFECT = 'vanishOut';
 const UPDATE_EFFECT = 'vanishIn';
 const COMMENT_EFFECT = 'vanishOut';
 
+$(window).keydown(function(e){
+    if (e.keyCode == 32) { // space key
+        startLots();
+    }
+    return false;
+});
+
 function onLoad() {
     initDisplay();
     fetchPhotos();
     setInterval(function() {
-         pickup(allPhotos[Math.floor(Math.random() * allPhotos.length)]);
+        if (!lotsMode) {
+            pickup(allPhotos[Math.floor(Math.random() * allPhotos.length)]);
+        }
     }, PICKUP_INTERVAL)
 
 
     setInterval(function() {
-        fetchPhotos();
+        if (!lotsMode) {
+            fetchPhotos();
+        }
     }, FETCH_INTERVAL);
 }
 
@@ -241,6 +253,6 @@ function randomStartPosition() {
     return {x: x, y: y};
 }
 
-function randomRefresh() {
-    // TODO
+function startLots() {
+    lotsMode = true;
 }
