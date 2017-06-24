@@ -1,12 +1,14 @@
 $(window).on('load', onLoad);
 var Cropper, cropper;
 const IMAGE_MIN_SIZE = 1500;
+var enablePhotoClick = false;
 
 function onLoad() {
     $('.fileinput').on('change', onFileChange);
     $('.shutter_button').on('click', onShutterClick);
     $('.cancel_button').on('click', onCancelClick);
     $('.submit_button').on('click', onSubmitClick);
+    $('.close_button').on('click', onCloseClick);
     Cropper = window.Cropper;
 
     initBalloon();
@@ -103,6 +105,23 @@ function editMode(enable) {
     }
 }
 
+function detailMode(enable, photo) {
+    var detailClassName = 'detail_mode';
+    if (enable) {
+        $('.show_area').addClass(detailClassName);
+        $('.detail_area').addClass(detailClassName);
+        $('.detail_photo').attr('src', './uploads/' + photo.filename);
+        $('.detail_comment').text(photo.comment);
+        $('.cancel_button').show();
+
+    } else {
+        $('.show_area').removeClass(detailClassName);
+        $('.detail_area').removeClass(detailClassName);
+        $('.detail_photo').attr('src', null);
+        $('.bg_container').scrollTop = 200;
+     }
+}
+
 function showProgress(enable) {
     if (enable) {
         $('.progress_bar').show();
@@ -118,6 +137,7 @@ function onShutterClick() {
 function onCancelClick() {
     $('.reset').click();
     editMode(false);
+    detailMode(false);
 }
 
 function onSubmitClick() {
@@ -144,6 +164,12 @@ function onSubmitClick() {
             }, 3000);
         },
         error: function (jqXHR, textStatus, errorThrown) {}});
+}
+
+function onCloseClick() {
+    $('.welcome_board').hide();
+    $('.bg_container').removeClass('background_mode');
+    enablePhotoClick = true;
 }
 
 function fetchPhotos() {
@@ -174,9 +200,17 @@ function insertPhotos(photos) {
     photos.forEach(function(photo) {
         const tile = $('<span>', {'class': 'bg_item'});
         const img = $('<img>', {'src': './uploads/small/' + photo.filename});
+        tile.on('click', {value: photo}, onItemClick);
         tile.append(img);
         bgContainer.append(tile);
     });
+}
+
+function onItemClick(e) {
+    if (!enablePhotoClick) {
+        return;
+    }
+    detailMode(true, e.data.value);
 }
 
 function escapeHtml (string) {
