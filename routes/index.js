@@ -69,9 +69,11 @@ app.post('/api/upload', upload.single('image'), function(req, res, next) {
 app.post('/api/list', function(req, res, next) {
     var size = req.body['limit'] || 30;
     var offset = req.body['offset'] || 0;
+    var older = req.body['older'] || false;
     var select = new Promise(function(resolve, reject) {
         db.serialize(function() {
-            db.all('select * from photo_table where id >= ? order by id desc limit ?', [offset, size], function(err, rows) {
+            const than = older ? '<' : '>';
+            db.all('select * from photo_table where id ' + than +' ? order by id desc limit ?', [offset, size], function(err, rows) {
                 if (!err) {
                     resolve(rows);
                 }

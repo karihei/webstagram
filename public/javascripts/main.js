@@ -1,6 +1,7 @@
 $(window).on('load', onLoad);
 var Cropper, cropper;
 const IMAGE_MIN_SIZE = 1500;
+const IMAGE_FETCH_SIZE = 20;
 var enablePhotoClick = false;
 
 function onLoad() {
@@ -118,7 +119,6 @@ function detailMode(enable, photo) {
         $('.show_area').removeClass(detailClassName);
         $('.detail_area').removeClass(detailClassName);
         $('.detail_photo').attr('src', null);
-        $('.bg_container').scrollTop = 200;
      }
 }
 
@@ -185,12 +185,14 @@ function onCloseClick() {
     enablePhotoClick = true;
 }
 
-function fetchPhotos() {
+function fetchPhotos(opt_offset) {
+    const offset = opt_offset || -1;
+    const older = opt_offset ? true : false;
     const fetch = new Promise(function(resolve, reject) {
         $.ajax({
             type: 'POST',
             url: '/api/list',
-            data: JSON.stringify({'limit': 20}),
+            data: JSON.stringify({'limit': IMAGE_FETCH_SIZE + 1, 'offset': offset, 'older': older}), // read more表示用に+1
             contentType: "application/json; charset=utf-8",
 
             success: function (res) {
@@ -217,6 +219,29 @@ function insertPhotos(photos) {
         tile.append(img);
         bgContainer.append(tile);
     });
+
+    if (photos.length > IMAGE_FETCH_SIZE) {
+        showReadMore(true, photos[IMAGE_FETCH_SIZE]);
+    } else {
+        showReadMore(false);
+    }
+}
+
+function showReadMore(enable, opt_offsetPhoto) {
+    if (enable) {
+        $('.read_more').on('click', {value: opt_offsetPhoto}, onReadMoreClick).show();
+    } else {
+        $('.read_more').off('click').hide();
+    }
+
+}
+
+function onReadMoreClick(e) {
+    if (!e.data.value) {
+        return;
+    }
+    $('.read_more').off('click').hide();
+    fetchPhotos(e.data.value.id);
 }
 
 function onItemClick(e) {
