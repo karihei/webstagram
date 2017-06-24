@@ -3,13 +3,16 @@ $(window).on('load', onLoad);
 var latestId = -1;
 var minPhotoRowLength = 1;
 var minHeight = 0;
-const ROWS = 4;
 var allPhotos = [];
+var currentPickupPos = [];
 var readyToPickup = false;
-const PICKUP_INTERVAL = 4000;
+
+const ROWS = 4;
+const PICKUP_INTERVAL = 10000;
 const FETCH_INTERVAL = 5000;
 
-var currentPickupPos = [];
+const PICKUP_EFFECT = 'rotateUp';
+const COMMENT_EFFECT = 'slideDown';
 
 function onLoad() {
     initDisplay();
@@ -29,7 +32,7 @@ function initDisplay() {
     minHeight = window.innerHeight / ROWS;
 
     for (var i = 0;i < ROWS;i++) {
-        var row = $('<div>', {'id': 'r' + i, 'class': 'row'});
+        const row = $('<div>', {'id': 'r' + i, 'class': 'row'});
         row.css('height', minHeight);
         $('.container').append(row);
     }
@@ -42,14 +45,14 @@ function getPath(filename) {
 }
 
 function insertPhotos(photos) {
-    var loop = Math.ceil(minPhotoRowLength / photos.length);
+    const loop = Math.ceil(minPhotoRowLength / photos.length);
     for (var i = 0;i < ROWS;i++) {
-        var row = $('#r' + i);
+        const row = $('#r' + i);
         var photoByRowCount = 0;
         for (var j = 0;j < loop;j++) {
 
             shufflePhoto(photos).forEach(function (photo) {
-                var item = $('<span>', {'class': 'item', 'id': 'i' + photoByRowCount + '_' + i}).append($('<img>', {'src': getPath(photo.filename)}));
+                const item = $('<span>', {'class': 'item', 'id': 'i' + photoByRowCount + '_' + i}).append($('<img>', {'src': getPath(photo.filename)}));
                 item.height(minHeight);
                 item.css('left', photoByRowCount * minHeight);
                 row.append(item);
@@ -67,8 +70,8 @@ function updatePhotos(photos) {
         } while (ngPoss.indexOf(pos.x + '_' + pos.y) == 0);
         ngPoss.push(pos.x + '_' + pos.y);
         $('#i' + pos.x + '_' + pos.y).remove();
-        var row = $('#r' + pos.y);
-        var item = $('<span>', {'class': 'item', 'id': 'i' + pos.x + '_' + pos.y}).append($('<img>', {'src': getPath(photo.filename)}));
+        const row = $('#r' + pos.y);
+        const item = $('<span>', {'class': 'item', 'id': 'i' + pos.x + '_' + pos.y}).append($('<img>', {'src': getPath(photo.filename)}));
         item.height(minHeight);
         item.css('left', pos.x * minHeight);
         row.append(item);
@@ -76,13 +79,13 @@ function updatePhotos(photos) {
 }
 
 function randomUpdatePosition() {
-    var x = Math.floor(Math.random() * minPhotoRowLength);
-    var y = Math.floor(Math.random() * ROWS);
+    const x = Math.floor(Math.random() * minPhotoRowLength);
+    const y = Math.floor(Math.random() * ROWS);
     return {x: x, y: y};
 }
 
 function fetchPhotos() {
-    var fetch = new Promise(function(resolve, reject) {
+    const fetch = new Promise(function(resolve, reject) {
         $.ajax({
             type: 'POST',
             url: '/api/list',
@@ -90,9 +93,9 @@ function fetchPhotos() {
             contentType: "application/json; charset=utf-8",
 
             success: function (res) {
-                var photos = res['result'];
+                const photos = res['result'];
                 if (photos.length > 0) {
-                    resolve(res['result']);
+                    resolve(photos);
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {}});
@@ -113,8 +116,8 @@ function fetchPhotos() {
 
 function shufflePhoto(array) {
     for(var i = array.length - 1; i > 0; i--){
-        var r = Math.floor(Math.random() * (i + 1));
-        var tmp = array[i];
+        const r = Math.floor(Math.random() * (i + 1));
+        const tmp = array[i];
         array[i] = array[r];
         array[r] = tmp;
     }
@@ -129,11 +132,10 @@ function pickup(photo) {
 
     var pickupCells = [];
     var commentCell;
-    var effect = 'rotateUp';
-    var duration = 200;
-    var startPos = randomStartPosition();
     var commentPos = {x: 0, y:0};
-    var tileSize = 3;
+    const duration = 200;
+    const startPos = randomStartPosition();
+    const tileSize = 3;
 
     // TODO:ROWを順番に見ているので新しく追加されたCELLに対応できていない。座標指定でやるべし
     for (var i = startPos.y;i < startPos.y + tileSize;i++) {
@@ -153,32 +155,33 @@ function pickup(photo) {
     pickupCells.forEach(function(cell, index) {
         pickupInterval = duration * index;
         setTimeout(function() {
-            $(cell).addClass('magictime ' + effect);
+            $(cell).addClass('magictime ' + PICKUP_EFFECT);
         }, pickupInterval);
     });
 
-    var pickupEl = $('<span>', {'class': 'pickup_item'});
-    var imgEl = $('<img>', {'src' : getPath(photo.filename)});
+    const pickupEl = $('<span>', {'class': 'pickup_item'});
+    const imgEl = $('<img>', {'src' : getPath(photo.filename)});
     pickupEl.append(imgEl);
-    pickupEl.css({'top': minHeight * startPos.y, 'left': minHeight * startPos.x});
-    pickupEl.width(minHeight * tileSize);
-    pickupEl.height(minHeight * tileSize);
+    pickupEl.css({'top': minHeight * startPos.y, 'left': minHeight * startPos.x})
+        .width(minHeight * tileSize)
+        .height(minHeight * tileSize);
 
     $('.container').append(pickupEl);
 
     if (photo.comment.length > 0) {
         setTimeout(function () {
-            $(commentCell).addClass('magictime ' + 'slideDown');
+            $(commentCell).addClass('magictime ' + COMMENT_EFFECT);
         }, pickupInterval + duration);
 
 
-        var commentContainer = $('<div>', {'class': 'comment_container'});
-        var comment = $('<h1>', {'class': 'comment'});
+        const commentContainer = $('<div>', {'class': 'comment_container'});
+        const comment = $('<h1>', {'class': 'comment'});
         comment.text(photo.comment);
-        commentContainer.width(minHeight - 20);
-        commentContainer.height(minHeight - 20);
-        commentContainer.css({'top': minHeight * commentPos.y + 2, 'left': minHeight * commentPos.x});
-        commentContainer.append(comment);
+        commentContainer
+            .width(minHeight - 20)
+            .height(minHeight - 20)
+            .css({'top': minHeight * commentPos.y + 2, 'left': minHeight * commentPos.x})
+            .append(comment);
         $('.container').append(commentContainer);
     }
 }
@@ -186,16 +189,16 @@ function pickup(photo) {
 function resetPickup() {
     $('.pickup_item').remove();
     $('.comment_container').remove();
-    $('.item.magictime').removeClass('magictime slideDown rotateUp');
+    $('.item.magictime').removeClass('magictime ' + COMMENT_EFFECT + ' ' + PICKUP_EFFECT);
     currentPickupPos = [];
 }
 
 function randomStartPosition() {
-    var x = Math.round(Math.random() * (minPhotoRowLength - 7));
-    var y = Math.round(Math.random() * (ROWS - 3));
+    const x = Math.round(Math.random() * (minPhotoRowLength - 7));
+    const y = Math.round(Math.random() * (ROWS - 3));
     return {x: x, y: y};
 }
 
 function randomRefresh() {
-
+    // TODO
 }

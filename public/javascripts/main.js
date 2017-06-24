@@ -1,14 +1,14 @@
 $(window).on('load', onLoad);
-var Cropper;
-var cropper;
-
+var Cropper, cropper;
 const IMAGE_MIN_SIZE = 1500;
+var enablePhotoClick = false;
 
 function onLoad() {
-    $('.fileinput').change(onFileChange);
+    $('.fileinput').on('change', onFileChange);
     $('.shutter_button').on('click', onShutterClick);
     $('.cancel_button').on('click', onCancelClick);
     $('.submit_button').on('click', onSubmitClick);
+    $('.close_button').on('click', onCloseClick);
     Cropper = window.Cropper;
 
     initBalloon();
@@ -32,19 +32,24 @@ function onFileChange() {
     showProgress(true);
     const file = this.files[0];
     const fileReader = new FileReader();
+    const imgEl = $('.thumnail');
+    const thumbnailWidth = $('.edit_area').width();
 
-    fileReader.onload = function(event) {
-        const imgEl = $('.thumnail');
-        const thumnailWidth = $('.edit_area').width();
-        imgEl.css({
-            'min-height': thumnailWidth,
-            'max-height': thumnailWidth
-        });
-        if (cropper) {
-            imgEl.attr('src', null);
-            cropper.destroy();
-        }
+    const fileLoad = new Promise(function (resolve, reject) {
+        fileReader.onload = function() {
+            imgEl.css({
+                'min-height': thumbnailWidth,
+                'max-height': thumbnailWidth
+            });
+            if (cropper) {
+                imgEl.attr('src', null);
+                cropper.destroy();
+            }
+            resolve(file);
+        };
+    });
 
+    fileLoad.then(function(file) {
         adjustImage(file, function(canvas) {
             imgEl.attr('src', canvas.toDataURL());
             cropper = new Cropper(imgEl[0], {
@@ -56,13 +61,13 @@ function onFileChange() {
                 cropBoxResizable: false,
                 dragCrop: false,
                 toggleDragModeOnDblclick: false,
-                minCropBoxWidth: thumnailWidth - 1,
+                minCropBoxWidth: thumbnailWidth - 1,
                 ready: function() {
                     showProgress(false);
                 }
             });
         });
-    };
+    });
 
     fileReader.readAsDataURL(file);
     editMode(true);
@@ -84,8 +89,7 @@ function adjustImage(file, callback) {
 
 function editMode(enable) {
     if (enable) {
-        $('.commentform').val('');
-        $('.commentform').show();
+        $('.commentform').val('').show();
         $('.edit_area').show();
         $('.show_area').hide();
         $('.cancel_button').show();
@@ -99,6 +103,23 @@ function editMode(enable) {
         $('.submit_button').hide();
         $('.footer').show();
     }
+}
+
+function detailMode(enable, photo) {
+    var detailClassName = 'detail_mode';
+    if (enable) {
+        $('.show_area').addClass(detailClassName);
+        $('.detail_area').addClass(detailClassName);
+        $('.detail_photo').attr('src', './uploads/' + photo.filename);
+        $('.detail_comment').text(photo.comment);
+        $('.cancel_button').show();
+
+    } else {
+        $('.show_area').removeClass(detailClassName);
+        $('.detail_area').removeClass(detailClassName);
+        $('.detail_photo').attr('src', null);
+        $('.bg_container').scrollTop = 200;
+     }
 }
 
 function showProgress(enable) {
@@ -116,24 +137,24 @@ function onShutterClick() {
 function onCancelClick() {
     $('.reset').click();
     editMode(false);
+    detailMode(false);
 }
 
 function onSubmitClick() {
     const base64img = cropper.getCroppedCanvas().toDataURL();
-    showProgress(true);
+    const comment = escapeHtml($('.commentform').val());
 
-    var comment = escapeHtml($('.commentform').val());
+    showProgress(true);
     $.ajax({
         type: 'POST',
         url: '/api/upload',
-        data: '{"imgBase64":"' + base64img + '", "comment":"' + comment + '"}',
+        data: JSON.stringify({'imgBase64': base64img, 'comment': comment}),
         contentType: "application/json; charset=utf-8",
 
-        success: function (data) {
+        success: function () {
             showProgress(false);
-            var successEl = $('.success');
-            successEl.css({'display': 'inline-block'});
-            successEl.addClass('magictime vanishIn');
+            const successEl = $('.success');
+            successEl.css({'display': 'inline-block'}).addClass('magictime vanishIn');
             $('.edit_area').fadeOut(300, function () {
                 editMode(false);
             });
@@ -145,8 +166,14 @@ function onSubmitClick() {
         error: function (jqXHR, textStatus, errorThrown) {}});
 }
 
+function onCloseClick() {
+    $('.welcome_board').hide();
+    $('.bg_container').removeClass('background_mode');
+    enablePhotoClick = true;
+}
+
 function fetchPhotos() {
-    var fetch = new Promise(function(resolve, reject) {
+    const fetch = new Promise(function(resolve, reject) {
         $.ajax({
             type: 'POST',
             url: '/api/list',
@@ -154,7 +181,7 @@ function fetchPhotos() {
             contentType: "application/json; charset=utf-8",
 
             success: function (res) {
-                var photos = res['result'];
+                const photos = res['result'];
                 if (photos.length > 0) {
                     resolve(res['result']);
                 }
@@ -169,13 +196,21 @@ function fetchPhotos() {
 }
 
 function insertPhotos(photos) {
-    var bgContainer = $('.bg_container');
+    const bgContainer = $('.bg_container');
     photos.forEach(function(photo) {
-        var tile = $('<span>', {'class': 'bg_item'});
-        var img = $('<img>', {'src': './uploads/small/' + photo.filename});
+        const tile = $('<span>', {'class': 'bg_item'});
+        const img = $('<img>', {'src': './uploads/small/' + photo.filename});
+        tile.on('click', {value: photo}, onItemClick);
         tile.append(img);
         bgContainer.append(tile);
     });
+}
+
+function onItemClick(e) {
+    if (!enablePhotoClick) {
+        return;
+    }
+    detailMode(true, e.data.value);
 }
 
 function escapeHtml (string) {
