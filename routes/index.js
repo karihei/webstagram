@@ -72,7 +72,7 @@ app.post('/api/list', function(req, res, next) {
     var older = req.body['older'] || false;
     var select = new Promise(function(resolve, reject) {
         db.serialize(function() {
-            const than = older ? '<' : '>';
+            const than = older ? '<=' : '>=';
             db.all('select * from photo_table where id ' + than +' ? order by id desc limit ?', [offset, size], function(err, rows) {
                 if (!err) {
                     resolve(rows);

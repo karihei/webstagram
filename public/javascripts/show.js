@@ -7,13 +7,15 @@ var allPhotos = [];
 var currentPickupPos = [];
 var readyToPickup = false;
 var pickupStreak = 0;
+var updatePhotoQueue = [];
 const maxPickupStreak = 3;
 
 const ROWS = 4;
 const PICKUP_INTERVAL = 10000;
-const FETCH_INTERVAL = 1000;
+const FETCH_INTERVAL = 5000;
 
 const PICKUP_EFFECT = 'vanishOut';
+const UPDATE_EFFECT = 'vanishIn';
 const COMMENT_EFFECT = 'vanishOut';
 
 function onLoad() {
@@ -80,8 +82,20 @@ function updatePhotos(photos) {
         $('#i' + pos.x + '_' + pos.y).remove();
         const row = $('#r' + pos.y);
         const item = $('<span>', {'class': 'item', 'id': 'i' + pos.x + '_' + pos.y}).append($('<img>', {'src': getPath(photo.filename)}));
-        item.height(minHeight);
-        item.css('left', pos.x * minHeight);
+        item.height(minHeight)
+            .css('left', pos.x * minHeight)
+            .hide();
+        const placeholder = $('<span>', {'class': 'item_placeholder'})
+            .css('left', pos.x * minHeight)
+            .height(minHeight)
+            .width(minHeight);
+        setTimeout(function() {
+            $(item).show().addClass('magictime ' + UPDATE_EFFECT);
+            $(placeholder).fadeOut(300, function () {
+                $(this).remove();
+            });
+        }, 400);
+        row.append(placeholder);
         row.append(item);
     });
 }
