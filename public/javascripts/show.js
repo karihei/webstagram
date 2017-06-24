@@ -6,20 +6,21 @@ var minHeight = 0;
 var allPhotos = [];
 var currentPickupPos = [];
 var readyToPickup = false;
+var pickupStreak = 0;
+const maxPickupStreak = 3;
 
 const ROWS = 4;
 const PICKUP_INTERVAL = 10000;
 const FETCH_INTERVAL = 5000;
 
-const PICKUP_EFFECT = 'rotateUp';
-const COMMENT_EFFECT = 'slideDown';
+const PICKUP_EFFECT = 'vanishOut';
+const COMMENT_EFFECT = 'vanishOut';
 
 function onLoad() {
     initDisplay();
     fetchPhotos();
-
     setInterval(function() {
-        pickup(allPhotos[Math.floor(Math.random() * allPhotos.length)]);
+         //pickup(allPhotos[Math.floor(Math.random() * allPhotos.length)]);
     }, PICKUP_INTERVAL)
 
 
@@ -108,6 +109,7 @@ function fetchPhotos() {
             // first
             insertPhotos(photos);
             readyToPickup = true;
+            pickup(allPhotos[Math.floor(Math.random() * allPhotos.length)]);
         } else {
             // updatePhotos(photos);
         }
@@ -125,30 +127,38 @@ function shufflePhoto(array) {
 }
 
 function pickup(photo) {
-    if (!readyToPickup) {
+    pickupStreak++;
+    if (!readyToPickup && pickupStreak < 0) {
         return;
     }
-    resetPickup();
+    if (pickupStreak > maxPickupStreak) {
+        resetPickup();
+        pickupStreak = -1;
+        return;
+    }
 
     var pickupCells = [];
-    var commentCell;
-    var commentPos = {x: 0, y:0};
-    const duration = 200;
-    const startPos = randomStartPosition();
+    var commentCells = [];
+    var commentPos;
+    const duration = 50;
+    const startPos = {x: 0, y: 0}; // randomStartPosition(); 解像度によってはランダム要素いらないかも
     const tileSize = 3;
 
-    // TODO:ROWを順番に見ているので新しく追加されたCELLに対応できていない。座標指定でやるべし
     for (var i = startPos.y;i < startPos.y + tileSize;i++) {
-        $('#r' + i + ' .item').each(function(index, item) {
-            if (index >= startPos.x && index < (startPos.x + tileSize)) {
+        for(var j = 0;j < minPhotoRowLength;j++) {
+            const posStr = j + '_' + i;
+            const item = $('#i' + posStr);
+            if (j >= startPos.x && j < (startPos.x + tileSize)) {
                 pickupCells.push(item);
-                currentPickupPos.push(index + '_' + i);
-            } else if (index == (startPos.x + tileSize) && i == (startPos.y + 1)) {
-                commentCell = item;
-                commentPos = {x: index, y: i};
-                currentPickupPos.push(index + '_' + i);
+                currentPickupPos.push(posStr);
+            } else if ((j == (startPos.x + tileSize) || j == (startPos.x + tileSize + 1)) && i == (startPos.y + 1)) {
+                commentCells.push(item);
+                if (!commentPos) {
+                    commentPos = {x: j, y: i};
+                }
+                currentPickupPos.push(posStr);
             }
-        });
+        }
     }
 
     var pickupInterval = 0;
@@ -159,7 +169,7 @@ function pickup(photo) {
         }, pickupInterval);
     });
 
-    const pickupEl = $('<span>', {'class': 'pickup_item'});
+    const pickupEl = $('<span>', {'class': 'pickup_item magictime vanishIn'});
     const imgEl = $('<img>', {'src' : getPath(photo.filename)});
     pickupEl.append(imgEl);
     pickupEl.css({'top': minHeight * startPos.y, 'left': minHeight * startPos.x})
@@ -169,20 +179,31 @@ function pickup(photo) {
     $('.container').append(pickupEl);
 
     if (photo.comment.length > 0) {
-        setTimeout(function () {
-            $(commentCell).addClass('magictime ' + COMMENT_EFFECT);
-        }, pickupInterval + duration);
+        commentCells.forEach(function(cell, index) {
+            setTimeout(function () {
+                $(cell).addClass('magictime ' + COMMENT_EFFECT);
+            }, pickupInterval + duration);
+        });
 
+        const commentContainer = $('<div>', {'class': 'comment_container'})
+            .width(minHeight * 2 - 20)
+            .height(minHeight - 25)
+            .css({'top': minHeight * commentPos.y + 4, 'left': minHeight * commentPos.x});
 
-        const commentContainer = $('<div>', {'class': 'comment_container'});
-        const comment = $('<h1>', {'class': 'comment'});
-        comment.text(photo.comment);
-        commentContainer
-            .width(minHeight - 20)
-            .height(minHeight - 20)
-            .css({'top': minHeight * commentPos.y + 2, 'left': minHeight * commentPos.x})
-            .append(comment);
+        const comment = $('<h1>', {'class': 'comment'})
+            .text(photo.comment)
+            .css('font-size', calcFontSize(photo.comment, commentContainer) + 'px');
+
+        commentContainer.append(comment);
         $('.container').append(commentContainer);
+    }
+}
+
+function calcFontSize(comment, container) {
+    if (comment.length > 0) {
+        return Math.sqrt(container.width() * container.height() / comment.length * 0.6);
+    } else {
+        return 0;
     }
 }
 
