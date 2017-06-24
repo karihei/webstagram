@@ -28,7 +28,7 @@ db.serialize(function () {
 
 function insertPhotoData(param) {
     db.serialize(function() {
-        db.run('insert or ignore into photo_table (id, filename, comment) values (?, ?, ?)', [param.id, param.filename, param.comment]);
+        db.run('insert or ignore into photo_table (id, filename, comment, datetime) values (?, ?, ?, datetime("now"))', [param.id, param.filename, param.comment]);
     });
 }
 
@@ -73,6 +73,23 @@ app.post('/api/list', function(req, res, next) {
     var select = new Promise(function(resolve, reject) {
         db.serialize(function() {
             const than = older ? '<=' : '>=';
+            db.all('select * from photo_table where id ' + than +' ? order by id desc limit ?', [offset, size], function(err, rows) {
+                if (!err) {
+                    resolve(rows);
+                }
+            });
+        });
+    });
+
+    select.then(function(rows){
+        res.json({ 'result': rows});
+    });
+});
+
+app.post('/api/lots', function(req, res, next) {
+    //var older = req.body['older'] || false;
+    var select = new Promise(function(resolve, reject) {
+        db.serialize(function() {
             db.all('select * from photo_table where id ' + than +' ? order by id desc limit ?', [offset, size], function(err, rows) {
                 if (!err) {
                     resolve(rows);
