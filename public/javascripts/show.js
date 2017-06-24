@@ -11,7 +11,7 @@ const maxPickupStreak = 3;
 
 const ROWS = 4;
 const PICKUP_INTERVAL = 10000;
-const FETCH_INTERVAL = 5000;
+const FETCH_INTERVAL = 1000;
 
 const PICKUP_EFFECT = 'vanishOut';
 const COMMENT_EFFECT = 'vanishOut';
@@ -20,7 +20,7 @@ function onLoad() {
     initDisplay();
     fetchPhotos();
     setInterval(function() {
-         //pickup(allPhotos[Math.floor(Math.random() * allPhotos.length)]);
+         pickup(allPhotos[Math.floor(Math.random() * allPhotos.length)]);
     }, PICKUP_INTERVAL)
 
 
@@ -38,7 +38,7 @@ function initDisplay() {
         $('.container').append(row);
     }
 
-    minPhotoRowLength = Math.floor(window.innerWidth / minHeight) + 2;
+    minPhotoRowLength = Math.floor(window.innerWidth / minHeight) + 1;
 }
 
 function getPath(filename) {
@@ -47,28 +47,35 @@ function getPath(filename) {
 
 function insertPhotos(photos) {
     const loop = Math.ceil(minPhotoRowLength / photos.length);
+
     for (var i = 0;i < ROWS;i++) {
         const row = $('#r' + i);
         var photoByRowCount = 0;
         for (var j = 0;j < loop;j++) {
-
-            shufflePhoto(photos).forEach(function (photo) {
-                const item = $('<span>', {'class': 'item', 'id': 'i' + photoByRowCount + '_' + i}).append($('<img>', {'src': getPath(photo.filename)}));
-                item.height(minHeight);
-                item.css('left', photoByRowCount * minHeight);
-                row.append(item);
-                photoByRowCount++;
-            });
+            photos = shufflePhoto(photos);
+            for (var k = 0;k < photos.length;k++) {
+                const photoIndex = minPhotoRowLength * i + photoByRowCount;
+                if (photoByRowCount < minPhotoRowLength && photoIndex < photos.length) {
+                    const item = $('<span>', {
+                        'class': 'item',
+                        'id': 'i' + photoByRowCount + '_' + i
+                    }).append($('<img>', {'src': getPath(photos[photoIndex].filename)}));
+                    item.height(minHeight);
+                    item.css('left', photoByRowCount * minHeight);
+                    row.append(item);
+                    photoByRowCount++;
+                }
+            }
         }
     }
 }
 
 function updatePhotos(photos) {
-    var ngPoss = currentPickupPos;
+    var ngPoss = currentPickupPos.concat();
     photos.forEach(function(photo) {
         do {
             var pos = randomUpdatePosition();
-        } while (ngPoss.indexOf(pos.x + '_' + pos.y) == 0);
+        } while (ngPoss.indexOf(pos.x + '_' + pos.y) >= 0);
         ngPoss.push(pos.x + '_' + pos.y);
         $('#i' + pos.x + '_' + pos.y).remove();
         const row = $('#r' + pos.y);
@@ -90,7 +97,7 @@ function fetchPhotos() {
         $.ajax({
             type: 'POST',
             url: '/api/list',
-            data: JSON.stringify({'offset': latestId}),
+            data: JSON.stringify({'offset': latestId, limit: minPhotoRowLength * ROWS}),
             contentType: "application/json; charset=utf-8",
 
             success: function (res) {
@@ -109,9 +116,8 @@ function fetchPhotos() {
             // first
             insertPhotos(photos);
             readyToPickup = true;
-            pickup(allPhotos[Math.floor(Math.random() * allPhotos.length)]);
         } else {
-            // updatePhotos(photos);
+            updatePhotos(photos);
         }
     });
 }
@@ -137,6 +143,7 @@ function pickup(photo) {
         return;
     }
 
+    currentPickupPos = [];
     var pickupCells = [];
     var commentCells = [];
     var commentPos;
