@@ -359,7 +359,9 @@ function stopLots() {
         .animate({'left': '0'}, 250, function() {
             $('#lots_1').remove();
         }).delay(5000)
-        .animate({'left': '-=1000'}, 500);
+        .animate({'left': '-=1000'}, 500, function () {
+            $('.kami_fubuki').show();
+        });
 
     right.animate({'left': '+=200'}, 2000)
         .animate({'left': '-=200'}, 500)
