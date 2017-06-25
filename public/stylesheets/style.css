@@ -182,13 +182,14 @@ a {
 
 .bg_container {
     position: absolute;
-    margin-bottom: 135px;
+    margin-bottom: 175px;
+    padding-bottom: 155px;
 }
 
 .read_more {
     display: none;
     position: absolute;
-    bottom: -50px;
+    bottom: 100px;;
     right: 0;
     left: 0;
     font-size: 2em;
