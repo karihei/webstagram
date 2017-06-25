@@ -75,3 +75,56 @@ a {
   width: 100%;
 
 }
+
+.lots_left {
+  position: absolute;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+.lots_right {
+  position: absolute;
+  height: 100%;
+  top: 0;
+}
+
+.lots_photo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  z-index: -1;
+}
+
+.lots_photo img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  z-index: -1;
+}
+
+#lots_0 {
+  z-index: -30;
+}
+
+#lots_1 {
+  z-index: -20;
+}
+
+#lots_2 {
+  z-index: -10;
+}
+
+.lots_item {
+  overflow-x: visible;
+  display: inline-block;
+}
+
+.lots_item img {
+  height: 100%;
+  width: 100%;
+}

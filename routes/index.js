@@ -72,7 +72,7 @@ app.post('/api/list', function(req, res, next) {
     var older = req.body['older'] || false;
     var select = new Promise(function(resolve, reject) {
         db.serialize(function() {
-            const than = older ? '<=' : '>=';
+            const than = older ? '<' : '>';
             db.all('select * from photo_table where id ' + than +' ? order by id desc limit ?', [offset, size], function(err, rows) {
                 if (!err) {
                     resolve(rows);
@@ -87,10 +87,11 @@ app.post('/api/list', function(req, res, next) {
 });
 
 app.post('/api/lots', function(req, res, next) {
-    //var older = req.body['older'] || false;
+    var offset = req.body['offset'] || 0;
+    var size = req.body['limit'] || 50;
     var select = new Promise(function(resolve, reject) {
         db.serialize(function() {
-            db.all('select * from photo_table where id ' + than +' ? order by id desc limit ?', [offset, size], function(err, rows) {
+            db.all('select * from photo_table where id > ? order by random() limit ?', [offset, size], function(err, rows) {
                 if (!err) {
                     resolve(rows);
                 }

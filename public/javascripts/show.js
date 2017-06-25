@@ -8,8 +8,9 @@ var currentPickupPos = [];
 var readyToPickup = false;
 var lotsMode = false;
 var pickupStreak = 0;
-var updatePhotoQueue = [];
+var lotsPhotos = [];
 const maxPickupStreak = 3;
+var lotsIntervals = [];
 
 const ROWS = 4;
 const PICKUP_INTERVAL = 10000;
@@ -20,8 +21,16 @@ const UPDATE_EFFECT = 'vanishIn';
 const COMMENT_EFFECT = 'vanishOut';
 
 $(window).keydown(function(e){
-    if (e.keyCode == 32) { // space key
-        startLots();
+    switch (e.keyCode) {
+        case 32: // space
+            stopLots();
+            break;
+        case 76: // L
+            standbyLots();
+            break;
+        case 83: // S
+            startLots();
+            break;
     }
     return false;
 });
@@ -253,6 +262,122 @@ function randomStartPosition() {
     return {x: x, y: y};
 }
 
-function startLots() {
+
+function standbyLots() {
     lotsMode = true;
+}
+
+function startLots() {
+    if (!lotsMode) {
+        return;
+    }
+    const lots = new Promise(function(resolve, reject) {
+        $.ajax({
+            type: 'POST',
+            url: '/api/lots',
+            data: JSON.stringify({'offset': 0}),
+            contentType: "application/json; charset=utf-8",
+
+            success: function (res) {
+                const photos = res['result'];
+                if (photos.length > 0) {
+                    resolve(photos);
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {}});
+    });
+
+    lots.then(function(photos) {
+        lotsPhotos = photos.slice(0, 3);
+        lotsEffect(photos);
+    });
+}
+
+function lotsEffect(photos) {
+    const left = $('.lots_left').width(minHeight * 3);
+    const right = $('.lots_right').width(minHeight * 3).css('left', minHeight * 3 + 2 + 'px');
+
+    const items = $('.item');
+    items.each(function(index, item) {
+        var lotsItem = $('<span>', {'class': 'lots_item'})
+            .height(minHeight)
+            .width(minHeight)
+            .append($('<img>'));
+        if (items.length / 2 > index) {
+            left.append(lotsItem);
+        } else {
+            right.append(lotsItem);
+        }
+        item.remove();
+    });
+
+    $('.lots_item img').each(function(index, img) {
+        const interval = setInterval(function() {
+            const rPhoto = photos[Math.ceil(Math.random() * photos.length - 1)];
+            $(img).attr('src', './uploads/small/' + rPhoto.filename);
+        }, 100);
+        lotsIntervals.push(interval);
+    });
+
+    for (var i = 0;i < 3;i++) {
+        $('.lots_photo').append($('<img>',
+            {'src': './uploads/' + lotsPhotos[i].filename, 'id': 'lots_' + i}))
+    }
+}
+
+function stopLots() {
+    lotsIntervals.forEach(function(interval) {
+        clearInterval(interval);
+    });
+
+    const left = $('.lots_left');
+    const right = $('.lots_right');
+    const rumble = new Promise(function(resolve) {
+
+//        left.trigger('startRumble');
+//       right.trigger('startRumble');
+        resolve();
+    });
+
+    rumble.then(function() {
+    left.animate({'left': '-=200'}, 2000)
+        .animate({'left': '+=200'}, 500)
+        .delay(300)
+        .animate({'left': '-=100'}, 800)
+        .delay(500)
+        .animate({'left': '-=100'}, 500)
+        .delay(250)
+        .animate({'left': '-=100'}, 500)
+        .delay(250)
+        .animate({'left': '-=200'}, 3000)
+        .delay(400)
+        .animate({'left': '0'}, 250, function() {
+            $('#lots_2').remove();
+        }).delay(300)
+        .animate({'left': '-=400'}, 4000)
+        .delay(100)
+        .animate({'left': '0'}, 250, function() {
+            $('#lots_1').remove();
+        }).delay(5000)
+        .animate({'left': '-=1000'}, 500);
+
+    right.animate({'left': '+=200'}, 2000)
+        .animate({'left': '-=200'}, 500)
+        .delay(300)
+        .animate({'left': '+=100'}, 800)
+        .delay(500)
+        .animate({'left': '+=100'}, 500)
+        .delay(250)
+        .animate({'left': '+=100'}, 500)
+        .delay(250)
+        .animate({'left': '+=200'}, 3000)
+        .delay(400)
+        .animate({'left': minHeight * 3 + 2}, 250)
+        .delay(300)
+        .animate({'left': '+=400'}, 4000)
+        .delay(100)
+        .animate({'left': minHeight * 3 + 2}, 250)
+        .delay(5000)
+        .animate({'left': '+=1000'}, 500);
+    });
 }
